@@ -5,6 +5,7 @@ import {userStore, ax} from "./userStore"
 let query = document.location.search;
 const urlParams = new URLSearchParams(query);
 
+
 export const gameStore = reactive({
     game_id : urlParams.get("game_id") || localStorage.getItem("game_id") || -1,
     games : [],

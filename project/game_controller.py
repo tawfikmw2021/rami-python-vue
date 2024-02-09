@@ -36,4 +36,10 @@ def gforui(id:int, game=None):
 
 def uforui(id:str):
     p = User.query.filter_by(id=int(id.split(":")[0])).first()
+    if(not p):
+       return {}
     return {"id": p.id, "name":p.name, "score":int(id.split(":")[1])}
+
+def uforuifromid(id:str):
+    p = User.query.filter_by(id=int(id)).first()
+    return {"id": p.id, "name":p.name, "score":'n'}

@@ -1,7 +1,7 @@
 from flask import Blueprint
 from flask_login import current_user, login_required
 
-from project.game_controller import gforui, rforui, uforui
+from project.game_controller import gforui, rforui, uforui, uforuifromid
 
 from project.models import Game, Round, User
 from sqlalchemy import update
@@ -107,7 +107,7 @@ def addGame(app, socketio:SocketIO):
             if(finished):
                 round.players = ",".join([ f"{p.id}:{p.score}" for p in rc.players])
                 db.session.commit()
-                socketio.emit("update", f"finish:{user_id}", to="round"+str(round_id) )
+                socketio.emit("update", f"finish:{uforuifromid(user_id)}", to="round"+str(round_id) )
         # add the new user to the database
         return rforui(round_id, round)
 
@@ -138,11 +138,14 @@ def addGame(app, socketio:SocketIO):
     @game.route("/round/<round_id>/init")
     #@login_required
     def initr(round_id):
+        user_id = str(current_user.id) if current_user.is_authenticated  else request.args.get("user_id")
+        players = request.args.get("players")
         #email = current_user.email
-        rounds
         round = Round.query.filter_by(id=round_id).first()
         if(round.state == "CREATED"):
             round.state = "PLAYING"
+            if(players):
+                round.players = players
 
             rc = RoundController(round.id)
 
@@ -152,9 +155,9 @@ def addGame(app, socketio:SocketIO):
             
 
             rc.initRoundController()
-            socketio.emit("init", f"", to="round"+str(round_id) )
+            socketio.emit("init", f"{uforuifromid(user_id)}", to="round"+str(round_id) )
 
-        db.session.commit()
+            db.session.commit()
         # add the new user to the database
         return rforui(-1, round)
 
@@ -176,7 +179,7 @@ def addGame(app, socketio:SocketIO):
             if (ip1 == ip2 and ics1 == ics2 and ics1 == "0"  ):
                 pass
             else:
-                socketio.emit("move", f"{moveResult[0]}{str(moveResult[1])}{str(moveResult[2])}", to="round"+str(round_id) )
+                socketio.emit("move", f"{uforuifromid(user_id)} : {moveResult[0]} allowed:{str(moveResult[1])} done:{str(moveResult[2])}", to="round"+str(round_id) )
             return round.tojson(int(user_id))
         
 
@@ -200,7 +203,7 @@ def addGame(app, socketio:SocketIO):
             rc = rounds[int(round_id)]
             rc.nextPlayer = int(request.args.get("nextp"))
             #if(rc.version>int(version)):
-            socketio.emit("update", f"nextp", to="round"+str(round_id) )
+            socketio.emit("update", f"set next p:{uforuifromid(user_id)}", to="round"+str(round_id) )
             return {}
             
 
@@ -211,7 +214,7 @@ def addGame(app, socketio:SocketIO):
         username = data['user_id']
         room = data['room']
         join_room(room)
-        send(str(username) + ' has entered the room.', to=room)
+        send(str(uforuifromid(username)) + ' has entered the room.', to=room)
     
     @socketio.on('leave')
     def on_leave(data):

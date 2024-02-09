@@ -29,6 +29,7 @@ export const store = reactive({
   added:{},
   removed:{},
   version:-1,
+  nversion : -1,
   myCards : [[1, 0,0,1]],
   droppedCards : [[-1, -1,1,1]],
   json : "",
@@ -42,6 +43,7 @@ export const store = reactive({
   ],
 
   scores:[0,0,0],
+  notifs:[],
 
   selected:[],
 
@@ -90,7 +92,7 @@ export const store = reactive({
     //console.log(ip1, ip2, ics1, ics2, idc1, idc2)
       
 
-      ax.get(`/round/${this.round_id}/move?user_id=2&ip1=${ip1}&ip2=${ip2}&ics1=${ics1}&ics2=${ics2}&idc1=${idc1}&idc2=${idc2}&user_id=${userStore.user_id}`)
+      ax.get(`/round/${this.round_id}/move?user_id=${this.user_id}&ip1=${ip1}&ip2=${ip2}&ics1=${ics1}&ics2=${ics2}&idc1=${idc1}&idc2=${idc2}&user_id=${userStore.user_id}`)
       .then(() => {
         return this.refresh()
       })
@@ -146,6 +148,14 @@ export const store = reactive({
       .catch(() => console.log("error init api"))
   },
 
+  initFromStats(round, callback){
+    ax.get(`/round/${round.id}/init?user_id=${userStore.user_id}&players=${round.players.map(v=> v.id+":"+0).join(",")}`)
+      .then(() => {
+        return callback()
+      })
+      .catch(() => console.log("error init api"))
+  },
+
   finish(){
     ax.get(`/round/${this.round_id}/finish?user_id=${userStore.user_id}`)
       .then(() => {
@@ -165,24 +175,28 @@ export const store = reactive({
 socket.emit("join", {user_id:store.user_id, room:"round"+store.round_id})
 
 socket.on("message", (...args) => {
-  args
+  store.nversion += 1;
+  store.notifs.unshift({id:store.nversion,message:args[0]})
   //console.log("message", args)
 })
 
 socket.on("move", (...args) => {
-  args
+  store.nversion += 1;
+  store.notifs.unshift({id:store.nversion,message:args[0]})
   store.refresh()
 })
 
 socket.on("update", (...args) => {
-  args
+  store.nversion += 1;
+  store.notifs.unshift({id:store.nversion,message:args[0]})
   store.refresh()
 })
 
 
 
 socket.on("init", (...args) => {
-  args
+  store.nversion += 1;
+  store.notifs.unshift({id:store.nversion,message:args[0]})
   store.refresh()
 })
 

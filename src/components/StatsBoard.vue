@@ -1,7 +1,7 @@
 <template>
   <div class="stats-board">
+    <button @click="getGames">get games</button>
     <div :style="{ display: userStore.enableEdit ? '' : 'none' }">
-      <button @click="getGames">get games</button>
       <button v-if="key == 'enable'" @click="newGame">new game</button>
 
       <input
@@ -75,6 +75,15 @@
               @click="joinRound(game.id, round.id)"
               >{{ round.id }}</a
             >
+            <button
+              style="line-height: 1em"
+              v-if="round.state == 'CREATED'"
+              @click="
+                roundStore.initFromStats(round, () => gameStore.refresh())
+              "
+            >
+              init
+            </button>
           </div>
           <div
             :style="{
@@ -85,7 +94,14 @@
             :key="player.id"
             :class="{ focusu: focusu(player) }"
           >
-            {{ getScore(player, round.players) }}
+            <input
+              type="checkbox"
+              :checked="getIndex(player, round.players) != -1"
+              @change="checkChange($event, round, player)"
+              v-if="round.state == 'CREATED'"
+            />
+            <span v-else> {{ getScore(player, round.players) }} </span>
+            ({{ getIndex(player, round.players) }})
           </div>
 
           <select
@@ -112,6 +128,7 @@
 </template>
 
 <script>
+import { store as roundStore } from "./game/ramiStore";
 import { gameStore } from "./gameStore";
 import { userStore } from "./userStore";
 
@@ -123,6 +140,7 @@ export default {
     return {
       gameStore: gameStore,
       userStore: userStore,
+      roundStore: roundStore,
       key: "enable",
     };
   },
@@ -130,6 +148,13 @@ export default {
     gameStore.refresh();
   },
   methods: {
+    checkChange(ev, round, player) {
+      console.log(ev, round, player);
+      round.players = round.players || [];
+      let pe = round.players.find((p) => p.id == player.id);
+      if (pe) round.players = round.players.filter((p) => p.id != player.id);
+      else round.players.push(player);
+    },
     focus(game) {
       return game.id == gameStore.game_id;
     },
@@ -143,6 +168,9 @@ export default {
     getScore: function (player, rplayers) {
       let pl = rplayers && rplayers.find((p) => p.id == player.id);
       return pl ? pl["score"] : "n";
+    },
+    getIndex: function (player, rplayers) {
+      return rplayers ? rplayers.map((v) => v.id).indexOf(player.id) : -1;
     },
     getGames: function () {
       this.gameStore.refresh();

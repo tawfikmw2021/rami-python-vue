@@ -84,6 +84,11 @@
     v-model="store.json"
     disabled
   ></textarea>
+  <div>
+    <div v-for="notif in store.notifs" :key="notif.id">
+      {{ notif.message }}
+    </div>
+  </div>
 </template>
 
 <script>

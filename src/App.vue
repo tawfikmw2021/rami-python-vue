@@ -26,7 +26,6 @@ const urlParams = new URLSearchParams(query);
 export default {
   name: "App",
   components: {
-    //HelloWorld,
     StatsBoard,
     RamiBoard,
   },
