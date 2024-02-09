@@ -5,26 +5,53 @@
       heavy
     </button>
     <button class="rami-btn col-4 col-md-2" @click="store.init()">init</button>
-    <button class="rami-btn col-4 col-md-2" @click="store.setNextPlayerToMe()">
+    <button
+      style="display: none"
+      class="rami-btn col-4 col-md-2"
+      @click="store.setNextPlayerToMe()"
+    >
       douri
     </button>
-    <button class="rami-btn col-4 col-md-2" @click="store.finish()">
+    <button class="rami-btn col-6 col-md-3" @click="store.finish()">
       rami
     </button>
-    <button class="rami-btn col-4 col-md-2" @click="store.abondon()">
+    <button class="rami-btn col-6 col-md-3" @click="store.abondon()">
       frish
     </button>
-  </div>
-  <div class="d-flex align-items-center">
-    <RamiCards
-      :cstyle="{ 'card-width': 0, 'img-width': 10 }"
-      :cards="[
-        [-1, -1, 0, 1],
-        [-1, -1, 0, 1],
-      ]"
-      :type="'-1::0'"
-      :cclass="'full-card'"
+
+    <button class="rami-btn col-6" @click="store.goToNext()">next</button>
+
+    <button
+      class="rami-btn col-3"
+      @click="store.forcer()"
+      :style="{ display: store.ref_round.startsWith('round') }"
+    >
+      forcer
+    </button>
+    <input
+      style="border: solid 1px"
+      class="rami-btn col-3"
+      v-model="store.ref_round"
     />
+  </div>
+  <div class="d-flex">
+    <div>
+      <button @click="store.move(-1, store.order, 0, 0, -1, -1)">echri</button>
+      <RamiCards
+        style="display: none"
+        :cstyle="{ 'card-width': 0, 'img-width': 10 }"
+        :cards="[
+          [-1, -1, 0, 1],
+          [-1, -1, 0, 1],
+        ]"
+        :type="'-1::0'"
+        :cclass="'full-card'"
+      />
+      <span style="font-size: small; padding-left: 2vh"
+        >current : {{ store.players[store.currentPlayer].name }}</span
+      >
+    </div>
+
     <RamiCards
       :cstyle="{ 'card-width': 3, 'img-width': 10 }"
       :cards="store.droppedCards"
@@ -50,7 +77,7 @@
     <div
       class="down"
       :class="{
-        nextp: store.nextPlayer == ip,
+        nextp: store.currentPlayer == ip,
         focusp: player.id == store.user_id,
       }"
     >
@@ -114,6 +141,9 @@ export default {
   },
 
   methods: {
+    goToNext: function () {
+      store.goToNext();
+    },
     setNextPlayerToMe: function () {
       store.setNextPlayerToMe();
     },
@@ -188,10 +218,11 @@ export default {
 .rami-btn {
   border: none;
   border-left: solid 1px rgba(96, 88, 84, 0.5);
+  border-bottom: solid 1px rgba(96, 88, 84, 0.5);
 }
 
 .rami-btn:first-child {
-  border: none;
+  border-left: none;
 }
 a.rami-btn {
   background-color: buttonface;

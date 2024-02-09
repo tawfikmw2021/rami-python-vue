@@ -51,8 +51,17 @@ class RoundController:
         self.actions = []
         self.abondoned = set()
         self.nextPlayer = 0
+
         self.version = -1
+
+        self.currentPlayer = int(0)
     
+    def goToNextPlayer(self, user_id):
+        actionnerOrder = [u for u in self.players if u.id == int(user_id)][0].order
+        if(self.currentPlayer != actionnerOrder): return False
+        self.currentPlayer = (self.currentPlayer+1)%len(self.players)
+        return True
+
     def join(self, p):
         self.players.append(Player(int(p['id']), len(self.players), p['name'], self))
 
@@ -68,7 +77,7 @@ class RoundController:
     
     def giveToPlayer(self, ip:int, ct:int = 1):
         for i in range(ct):
-            self.move(-1, ip, 0, 0, None, None)
+            self.move(self.players[self.currentPlayer].id,  -1, ip, 0, 0, None, None, bypass=True)
 
     
     def finish(self, pid):
@@ -152,10 +161,12 @@ class RoundController:
 
 
 
-    def move(self, iPlayer1:int, iPlayer2:int, iCards1:int, iCards2:int, idCard1:int, idCard2:int) -> tuple[str, bool, bool]:
+    def move(self,user_id, iPlayer1:int, iPlayer2:int, iCards1:int, iCards2:int, idCard1:int, idCard2:int, bypass=False) -> tuple[str, bool, bool]:
          action, isallowed, reason =  self.checkMoveDeep(iPlayer1, iPlayer2, iCards1, iCards2, idCard1, idCard2) 
          self.version += 1
          self.abondoned.clear()
+         actionnerOrder = [u for u in self.players if u.id == int(user_id)][0].order
+         if(not bypass and action != RoundController.ACTION_REORDER and self.currentPlayer != actionnerOrder) : return "UNOTHORIZED", False, False
          moved = self.moveInternal(iPlayer1, iPlayer2, iCards1, iCards2, idCard1, idCard2)
          self.postMove(moved ,action, iPlayer1, iPlayer2, iCards1, iCards2, idCard1, idCard2)
          return action, isallowed, moved 
@@ -176,6 +187,7 @@ class RoundController:
             card[1] = iPlayer2
             card[3] = len(self.players[iPlayer2].cards[0] )
             self.players[iPlayer2].cards[0].append(card)
+            
             return True
         
         # cas tayech
@@ -245,9 +257,15 @@ class RoundController:
                   "players":[ p.tojson(p.id == pid) for p in self.players],
                   "user_id":pid,
                   "version":self.version,
-                  "nextPlayer" : self.nextPlayer
+                  "nextPlayer" : self.nextPlayer,
+                  "currentPlayer" : self.currentPlayer
                   }
         return result
+    
+
+    def reorderCards():{
+
+    }
 
 rounds:dict[str, RoundController] = {}
 

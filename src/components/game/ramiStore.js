@@ -20,9 +20,10 @@ export const store = reactive({
   ],
   order : -1,
   round_id: urlParams.get("round_id") || localStorage.getItem("round_id") || -1,
+  game_id: urlParams.get("game_id") || localStorage.getItem("game_id") || -1,
   user_id : userStore.user_id,
 
-  nextPlayer : 0,
+  currentPlayer : 0,
   heavy : false,
   count: 0,
   ncards:0,
@@ -33,6 +34,7 @@ export const store = reactive({
   myCards : [[1, 0,0,1]],
   droppedCards : [[-1, -1,1,1]],
   json : "",
+  ref_round :"",
   players : [
      {
       ncards:5,
@@ -51,6 +53,7 @@ export const store = reactive({
 
 
   },
+
 
 
 
@@ -101,6 +104,11 @@ export const store = reactive({
 
   },
 
+  forcer(){
+    ax.get(`/round/${this.round_id}/forcer?user_id=${userStore.user_id}&ref_round=${this.ref_round}`).then(v => console.log(v))
+  },
+
+
   refresh(){
     ax.get(`/round/${this.round_id}/details?user_id=${userStore.user_id}&version=${this.version}`)
       .then(r => {
@@ -117,7 +125,7 @@ export const store = reactive({
         this.myCards = round.players[this.order].cards[0]
         this.ncards = round.ncards
         this.scores = round.scores
-        this.nextPlayer = round.nextPlayer
+        this.currentPlayer = round.currentPlayer
 
         let roundj = JSON.parse(r.data)
         roundj.players == roundj.players.map(v => {v.cards = []; return v})
@@ -146,6 +154,10 @@ export const store = reactive({
         return this.refresh()
       })
       .catch(() => console.log("error init api"))
+  },
+
+  goToNext(){
+    ax.get(`/round/${this.round_id}/gotonext?user_id=${userStore.user_id}`)
   },
 
   initFromStats(round, callback){
@@ -198,6 +210,15 @@ socket.on("init", (...args) => {
   store.nversion += 1;
   store.notifs.unshift({id:store.nversion,message:args[0]})
   store.refresh()
+})
+
+socket.on("nextp", (...args) => {
+  args
+  store.refresh()
+})
+
+socket.on("forcer", (...args) => {
+  document.location.href = document.location.origin+`?round_id=${args[0]}`  
 })
 
 function refresh() {

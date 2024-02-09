@@ -10,9 +10,8 @@ from flask import request
 from project import db
 
 from flask_socketio import SocketIO, join_room, leave_room, send
-from .round_controller import RoundController, rounds
+from .round_controller import Player, RoundController, rounds
 from datetime import datetime
-
 
 def addGame(app, socketio:SocketIO):
     testing=True
@@ -161,10 +160,23 @@ def addGame(app, socketio:SocketIO):
         # add the new user to the database
         return rforui(-1, round)
 
+    @game.route("/round/<round_id>/gotonext")
+    #@login_required
+    def gotonext(round_id):
+        user_id = str(current_user.id) if current_user.is_authenticated  else request.args.get("user_id")
+        if (int(round_id) in rounds):
+            round = rounds[int(round_id)]
+            result = round.goToNextPlayer(user_id)
+            if(result):
+                socketio.emit("nextp", f"{str(round.currentPlayer)}", to="round"+str(round_id) )
+            return str(round.currentPlayer)
 
+        return ""
+    
     @game.route("/round/<round_id>/move")
     #@login_required
     def mover(round_id):
+
         user_id = str(current_user.id) if current_user.is_authenticated  else request.args.get("user_id")
         ip1 = request.args.get("ip1")
         ip2 = request.args.get("ip2")
@@ -173,9 +185,10 @@ def addGame(app, socketio:SocketIO):
         idc1 = request.args.get("idc1")
         idc2 = request.args.get("idc2")
 
+
         if (int(round_id) in rounds):
             round = rounds[int(round_id)]
-            moveResult = round.move(int(ip1), int(ip2), int(ics1),int(ics2), int(idc1), int(idc2) )
+            moveResult = round.move(user_id, int(ip1), int(ip2), int(ics1),int(ics2), int(idc1), int(idc2) )
             if (ip1 == ip2 and ics1 == ics2 and ics1 == "0"  ):
                 pass
             else:
@@ -195,9 +208,11 @@ def addGame(app, socketio:SocketIO):
 
         return {}
     
+
     @game.route("/round/<round_id>/nextp")
     #@login_required
     def setNextP(round_id):
+        return {}
         user_id = str(current_user.id) if current_user.is_authenticated  else request.args.get("user_id")
         if (int(round_id) in rounds):
             rc = rounds[int(round_id)]
@@ -223,4 +238,12 @@ def addGame(app, socketio:SocketIO):
         leave_room(room)
         send(username + ' has left the room.', to=room)
         
+
+    @game.route("/round/<round_id>/forcer")
+    #@login_required
+    def forcer(round_id):
+        ref_room = request.args.get("ref_round")
+        socketio.emit("forcer", f"{round_id}", to=ref_room )
+        return ""
+
     return game
