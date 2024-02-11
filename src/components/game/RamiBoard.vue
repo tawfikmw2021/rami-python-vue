@@ -54,7 +54,7 @@
           font-weight: bold;
 
           left: 2vh;
-          top: 8vh;
+          top: 10vh;
         "
         @click="store.move(-1, store.order, 0, 0, -1, -1)"
       >
@@ -63,6 +63,9 @@
       <span style="font-size: small; padding-left: 2vh"
         >current : {{ store.players[store.currentPlayer].name }}</span
       >
+      <div style="font-size: small; padding-left: 2vh">
+        {{ "round" + store.round_id }}
+      </div>
       <div style="opacity: 0.5">
         <RamiCards
           :cstyle="{ 'card-width': 0, 'img-width': 5 }"

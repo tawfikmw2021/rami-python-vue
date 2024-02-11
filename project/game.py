@@ -125,6 +125,7 @@ def addGame(app, socketio:SocketIO):
             abondoned = rc.abondon(int(user_id))
             socketio.emit("update", "abondon:{user_id}", to="round"+str(round_id) )
             if(abondoned):
+                rc.state = "ABONDONED"
                 round.state = "ABONDONED"
                 db.session.commit()
                 socketio.emit("update", f"abondonconfirmed", to="round"+str(round_id) )
