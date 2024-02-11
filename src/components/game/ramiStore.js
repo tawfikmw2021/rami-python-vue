@@ -13,10 +13,10 @@ const urlParams = new URLSearchParams(query);
 
 export const store = reactive({
   colors: [
-    "rgba(255,0,0,0.2)",
-    "rgba(50,200,0,0.2)",
-    "rgba(0,200,100,0.2)",
-    "rgba(0,0,255,0.2)",
+    "rgba(255,0,0,0.7)",
+    "rgba(100,150,0,0.7)",
+    "rgba(0,150,100,0.7)",
+    "rgba(0,0,255,0.7)",
   ],
   order : -1,
   round_id: urlParams.get("round_id") || localStorage.getItem("round_id") || -1,

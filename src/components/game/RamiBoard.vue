@@ -232,7 +232,7 @@ export default {
   transform: translate(5vh, -2vh) rotate(0.25turn);
   transform-origin: top left;
   font-size: small;
-  color: rgb(255, 50, 50, 0.7);
+  color: rgb(255, 250, 250, 1);
 }
 .down-head-container {
   width: 5vh;
