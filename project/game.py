@@ -104,9 +104,10 @@ def addGame(app, socketio:SocketIO):
             rc = rounds[int(round_id)]
             finished = rc.finish(int(user_id))
             if(finished):
+                rc.state = "FINISHED"
                 round.players = ",".join([ f"{p.id}:{p.score}" for p in rc.players])
                 db.session.commit()
-                socketio.emit("update", f"finish:{uforuifromid(user_id)}", to="round"+str(round_id) )
+                socketio.emit("update", f"finish:{uforuifromid(user_id)['name']}", to="round"+str(round_id) )
         # add the new user to the database
         return rforui(round_id, round)
 
@@ -154,7 +155,7 @@ def addGame(app, socketio:SocketIO):
             
 
             rc.initRoundController()
-            socketio.emit("init", f"{uforuifromid(user_id)}", to="round"+str(round_id) )
+            socketio.emit("init", f"{uforuifromid(user_id)['name']}", to="round"+str(round_id) )
 
             db.session.commit()
         # add the new user to the database
@@ -192,7 +193,7 @@ def addGame(app, socketio:SocketIO):
             if (ip1 == ip2 and ics1 == ics2 and ics1 == "0"  ):
                 pass
             else:
-                socketio.emit("move", f"{uforuifromid(user_id)} : {moveResult[0]} allowed:{str(moveResult[1])} done:{str(moveResult[2])}", to="round"+str(round_id) )
+                socketio.emit("move", f"{uforuifromid(user_id)['name']} : {moveResult[0]} allowed:{str(moveResult[1])} done:{str(moveResult[2])}", to="round"+str(round_id) )
             return round.tojson(int(user_id))
         
 
@@ -229,7 +230,7 @@ def addGame(app, socketio:SocketIO):
         username = data['user_id']
         room = data['room']
         join_room(room)
-        send(str(uforuifromid(username)) + ' has entered the room.', to=room)
+        send(str(uforuifromid(username)['name']) + ' has entered the room.', to=room)
     
     @socketio.on('leave')
     def on_leave(data):

@@ -51,7 +51,6 @@ class RoundController:
         self.actions = []
         self.abondoned = set()
         self.nextPlayer = 0
-        self.state = "PLAYING"
 
         self.version = -1
 
@@ -127,10 +126,6 @@ class RoundController:
         case2 = iPlayer1>=0 and iPlayer2 == -1 and iCards1 == 0 and iCards2 == 1 and self.getNCards(iPlayer1) == 15
         if(case2) : return RoundController.ACTION_DROP, True
 
-        # drop
-        case21 = iPlayer1>=0 and iPlayer2 == -1 and iCards1 == 0 and iCards2 == 1 
-        if(case21) : return RoundController.ACTION_DROP, False
-
         # get card
         case3 = iPlayer1==-1 and iPlayer2 >=0 and iCards1 == 0 and iCards2 == 0 and self.getNCards(iPlayer2) == 14
         if(case3) : return RoundController.ACTION_BUY, self.nextPlayer == iPlayer2
@@ -174,7 +169,6 @@ class RoundController:
          if(not bypass and action != RoundController.ACTION_REORDER and self.currentPlayer != actionnerOrder) : return "UNOTHORIZED", False, False
          moved = self.moveInternal(iPlayer1, iPlayer2, iCards1, iCards2, idCard1, idCard2)
          self.postMove(moved ,action, iPlayer1, iPlayer2, iCards1, iCards2, idCard1, idCard2)
-         if(not bypass and action == RoundController.ACTION_DROP): self.goToNextPlayer(user_id)
          return action, isallowed, moved 
     
     def moveInternal(self, iPlayer1:int, iPlayer2:int, iCards1:int, iCards2:int, idCard1:int, idCard2:int) -> bool:
@@ -197,17 +191,18 @@ class RoundController:
             return True
         
         # cas tayech
-        if(iPlayer2 == -1 and iCards2 == 1):
+        if(iPlayer2 == -1 and iCards2 == 0):
             cards1 = self.cards[iCards1] if(iPlayer1 == -1) else self.players[iPlayer1].cards[iCards1]
             cards2 = self.cards[iCards2] if(iPlayer2 == -1) else self.players[iPlayer2].cards[iCards2]
             index1 = -1
             for i in range(len(cards1)):
                 if (cards1[i][0] == idCard1): index1 = i
-            cards1[index1][2] = 1
+                
+
             cards2.append(cards1[index1])
             cards1.remove(cards1[index1])
-            return True
 
+            return True
 
         
         
@@ -229,12 +224,10 @@ class RoundController:
         for i in range(len(cards1)):
             if (cards1[i][0] == idCard1): index1 = i
         
-
         index2 = -1
         for i in range(len(cards2)):
             if (cards2[i][0] == idCard2): index2 = i
         
-        if(iPlayer2 == -1 and iCards2 == 0): index2 = len(cards2)-1
         if (iPlayer1 == iPlayer2 and iCards1 == iCards2):
             ncard = cards1[index1]
             cards1.remove(ncard)
@@ -255,6 +248,10 @@ class RoundController:
 
 
         
+            
+
+
+
 
     def tojson(self, pid):
         result = { "id":self.id, "ncards":len(self.cards[0]), "droppedCards":self.cards[1][max(len(self.cards[1]) - 4, 0):], 
@@ -262,8 +259,7 @@ class RoundController:
                   "user_id":pid,
                   "version":self.version,
                   "nextPlayer" : self.nextPlayer,
-                  "currentPlayer" : self.currentPlayer,
-                  "state":self.state
+                  "currentPlayer" : self.currentPlayer
                   }
         return result
     

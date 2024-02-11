@@ -1,55 +1,79 @@
 <template>
-  <div class="row m-0">
-    <a class="rami-btn col-4 col-md-2" href="/">home</a>
-    <button class="rami-btn col-4 col-md-2" @click="store.heavyChange()">
-      heavy
-    </button>
-    <button class="rami-btn col-4 col-md-2" @click="store.init()">init</button>
-    <button
-      style="display: none"
-      class="rami-btn col-4 col-md-2"
-      @click="store.setNextPlayerToMe()"
-    >
-      douri
-    </button>
-    <button class="rami-btn col-6 col-md-3" @click="store.finish()">
-      rami
-    </button>
-    <button class="rami-btn col-6 col-md-3" @click="store.abondon()">
-      frish
-    </button>
+  <div>
+    <div
+      style="height: 10px"
+      class="col-12 showmenu"
+      @click="showmenu = !showmenu"
+    ></div>
+    <div class="row m-0" :style="{ display: showmenu ? '' : 'none' }">
+      <a class="rami-btn col-4 col-md-2" href="/">home</a>
+      <button class="rami-btn col-4 col-md-2" @click="store.heavyChange()">
+        heavy
+      </button>
+      <button class="rami-btn col-4 col-md-2" @click="store.init()">
+        init
+      </button>
+      <button
+        style="display: none"
+        class="rami-btn col-4 col-md-2"
+        @click="store.setNextPlayerToMe()"
+      >
+        douri
+      </button>
+      <button class="rami-btn col-6 col-md-3" @click="store.finish()">
+        rami
+      </button>
+      <button class="rami-btn col-6 col-md-3" @click="store.abondon()">
+        frish
+      </button>
 
-    <button class="rami-btn col-6" @click="store.goToNext()">next</button>
+      <button class="rami-btn col-6" @click="store.goToNext()">next</button>
 
-    <button
-      class="rami-btn col-3"
-      @click="store.forcer()"
-      :style="{ display: store.ref_round.startsWith('round') }"
-    >
-      forcer
-    </button>
-    <input
-      style="border: solid 1px"
-      class="rami-btn col-3"
-      v-model="store.ref_round"
-    />
+      <button
+        class="rami-btn col-3"
+        @click="store.forcer()"
+        :style="{ display: store.ref_round.startsWith('round') }"
+      >
+        forcer
+      </button>
+      <input
+        style="border: solid 1px"
+        class="rami-btn col-3"
+        v-model="store.ref_round"
+      />
+    </div>
   </div>
   <div class="d-flex">
-    <div>
-      <button @click="store.move(-1, store.order, 0, 0, -1, -1)">echri</button>
-      <RamiCards
-        style="display: none"
-        :cstyle="{ 'card-width': 0, 'img-width': 10 }"
-        :cards="[
-          [-1, -1, 0, 1],
-          [-1, -1, 0, 1],
-        ]"
-        :type="'-1::0'"
-        :cclass="'full-card'"
-      />
+    <div style="position: relative">
+      <button
+        style="
+          position: absolute;
+          background-color: transparent;
+          border: none;
+          font-size: small;
+          font-weight: bold;
+
+          left: 2vh;
+          top: 8vh;
+        "
+        @click="store.move(-1, store.order, 0, 0, -1, -1)"
+      >
+        echri
+      </button>
       <span style="font-size: small; padding-left: 2vh"
         >current : {{ store.players[store.currentPlayer].name }}</span
       >
+      <div style="opacity: 0.5">
+        <RamiCards
+          :cstyle="{ 'card-width': 0, 'img-width': 5 }"
+          :cards="[
+            [-1, -1, 0, 1],
+            [-1, -1, 0, 1],
+          ]"
+          :type="'-1::0'"
+          :cclass="'full-card'"
+        />
+      </div>
     </div>
 
     <RamiCards
@@ -57,6 +81,29 @@
       :cards="store.droppedCards"
       :type="'-1::1'"
     />
+    <div class="px-3">
+      <div
+        class="alert alert-primary"
+        role="alert"
+        :style="{
+          display:
+            store.players[store.currentPlayer].order == store.order
+              ? ''
+              : 'none',
+        }"
+      >
+        Your turn! ({{ store.state }})
+      </div>
+    </div>
+    <div>
+      <div
+        v-for="notif in store.notifs.slice(0, 4)"
+        :key="notif.id"
+        style="display: none"
+      >
+        {{ notif.message }}
+      </div>
+    </div>
   </div>
   <div class="d-flex align-items-center">
     <div class="down-head-container">
@@ -105,15 +152,17 @@
       </template>
     </div>
   </template>
-  <textarea
-    class="w-100"
-    style="height: 20vh"
-    v-model="store.json"
-    disabled
-  ></textarea>
-  <div>
-    <div v-for="notif in store.notifs" :key="notif.id">
-      {{ notif.message }}
+  <div style="display: none">
+    <textarea
+      class="w-100"
+      style="height: 20vh"
+      v-model="store.json"
+      disabled
+    ></textarea>
+    <div>
+      <div v-for="notif in store.notifs.slice(0, 4)" :key="notif.id">
+        {{ notif.message }}
+      </div>
     </div>
   </div>
 </template>
@@ -137,6 +186,7 @@ export default {
   data: function () {
     return {
       store: store,
+      showmenu: false,
     };
   },
 
@@ -238,6 +288,73 @@ a.rami-btn {
 
 .card-content {
   overflow: hidden;
+}
+
+.button {
+  position: relative;
+  background-color: black;
+  border-radius: 4em;
+  font-size: 16px;
+  color: white;
+  padding: 0.8em 1.8em;
+  cursor: pointer;
+  user-select: none;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition-duration: 0.4s;
+  -webkit-transition-duration: 0.4s; /* Safari */
+}
+
+.showmenu {
+  background-color: rgb(174, 193, 193, 0.8);
+  cursor: pointer;
+}
+
+.showmenu:active {
+  background-color: rgb(174, 193, 193);
+}
+
+.showmenu2:hover:after {
+  position: absolute;
+  left: 50vw;
+  background-color: aqua;
+  content: ">";
+  transform: rotate(00.25turn);
+  color: red;
+}
+
+.button:hover {
+  transition-duration: 0.1s;
+  background-color: #3a3a3a;
+}
+
+.button:after {
+  content: "";
+  display: block;
+  position: absolute;
+  border-radius: 4em;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: all 0.5s;
+  box-shadow: 0 0 10px 40px white;
+}
+
+.button:active:after {
+  box-shadow: 0 0 0 0 white;
+  position: absolute;
+  border-radius: 4em;
+  left: 0;
+  top: 0;
+  opacity: 1;
+  transition: 0s;
+}
+
+.button:active {
+  top: 1px;
 }
 </style>
 ./state ./ramiStore

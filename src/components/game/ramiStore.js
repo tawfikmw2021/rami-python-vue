@@ -125,6 +125,7 @@ export const store = reactive({
         this.myCards = round.players[this.order].cards[0]
         this.ncards = round.ncards
         this.scores = round.scores
+        this.state = "R"+this.round_id+" "+round.state
         this.currentPlayer = round.currentPlayer
 
         let roundj = JSON.parse(r.data)
